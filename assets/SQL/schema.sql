@@ -1,6 +1,6 @@
 
 drop table if exists department;
-drop table if exists role;
+drop table if exists rol;
 drop table if exists employee;
 
 create table department (
@@ -8,7 +8,7 @@ create table department (
     departmentName varchar(30)
 );
 
-create table role (
+create table rol (
     roleId int auto_increment primary key,
     title varchar(30),
     salary decimal,
@@ -22,6 +22,6 @@ create table employees(
     lastName varchar(30) not null,
     roleId int,
     managerId int null,
-    constraint _role foreign key (role_id) references role(role_id) on delete cascade,
-    constraint _manager foreign key (manager_id) references employee(employee_id) on delete set null
+    constraint _role foreign key (roleId) references rol(roleId) on delete cascade,
+    constraint _manager foreign key (managerId) references employee(employeeId) on delete set null
 );
