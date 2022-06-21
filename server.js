@@ -3,6 +3,8 @@ const table= require('console.table');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
+departmentArr = [];
+
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -72,7 +74,7 @@ choices: ['view all departments',
 };
 
 const departments = () => {
-    db.query('select * from department', (err, res) => {
+    db.query('select departmentId, departmentName from department;', (err, res) => {
         if (err) throw err;
         console.table(res);
         init();
@@ -80,7 +82,10 @@ const departments = () => {
 };
 
 const employees = () => {
-    db.query('select * from employees', (err, res) => {
+    db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
+                join rol on employees.roleId = rol.roleId
+                join department on employees.managerId = department.departmentId;`, 
+                (err, res) => {
         if (err) throw err;
         console.table(res);
         init();
@@ -88,7 +93,8 @@ const employees = () => {
 };
 
 const roles = () => {
-    db.query('select * from rol', (err, res) => {
+    db.query(`select roleId, departmentName, title, salary from rol
+                join department on rol.departmentId = department.departmentId;`, (err, res) => {
         if (err) throw err;
         console.table(res);
         init();
@@ -113,6 +119,15 @@ const addDepartment = () => {
 };
 
 const addRole = () => {
+    
+    inquirer.prompt([
+        {
+            name: 'selectDepartment',
+            type: 'list',
+            message: 'Which department would you like to add a role to?',
+            choices: 
+        }
+    ])
 
 };
 
