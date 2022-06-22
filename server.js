@@ -104,22 +104,35 @@ const roles = () => {
 };
 // adds a department into the database
 const addDepartment = () => {
-    inquirer.prompt([
-        {
-            name: 'newDepartment',
-            type: 'input',
-            message: 'Enter the name of the department you would like to add.'
-        }
-    ])
-    .then((response) => {
-        db.query('insert into department (departmentName) values (?)', response.newDepartment, (err, res) => {
-            if (err) throw err;
-            departmentArr = departmentArr.push(response.newDepartment);
-            console.log(`new department added : ` + response.newDepartment);
-            init();
-        })
-    })
-};
+    db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
+    join rol on employees.roleId = rol.roleId
+    join department on employees.managerId = department.departmentId;`, function (err, res) {
+        if (err) throw err;
+         employeeList = res.map(employees => {
+            return `${employees.firstName} ${employees.lastName}`})
+        inquirer.prompt([
+                {
+                    name: 'newDepartment',
+                    type: 'input',
+                    message: 'Enter the name of the department you would like to add.'
+                },
+                {
+                    name: 'newManager',
+                    type: 'list',
+                    message: 'Who is the department manager',
+                    choices: employeeList,
+                }
+            ])
+            .then((response) => {
+                db.query(`insert into department (departmentName, departmentManager) values ('${response.newDepartment}','${response.newManager}' )`, (err, res) => {
+                    if (err) throw err;
+                    departmentArr = departmentArr.push(response.newDepartment);
+                    console.log(`new department added : ` + response.newDepartment);
+                    init();
+                })
+            })
+        })};
+
 // adds a role into the database
 const addRole = () => {
     
