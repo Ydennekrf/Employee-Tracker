@@ -1,9 +1,12 @@
 
-const table= require('console.table');
+const cTable= require('console.table');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 
-departmentArr = [];
+let departmentArr = ['Data Engineering', 'Web Developers', 'Financial', 'Sales', 'Managment'];
+let employeeList;
+
+
 
 const db = mysql.createConnection({
     host: 'localhost',
@@ -112,6 +115,7 @@ const addDepartment = () => {
     .then((response) => {
         db.query('insert into department (departmentName) values (?)', response.newDepartment, (err, res) => {
             if (err) throw err;
+            departmentArr = departmentArr.push(response.newDepartment);
             console.log(`new department added : ` + response.newDepartment);
             init();
         })
@@ -125,22 +129,99 @@ const addRole = () => {
             name: 'selectDepartment',
             type: 'list',
             message: 'Which department would you like to add a role to?',
-            choices: 
+            choices: departmentArr,
+        },
+        {
+            name:'newRole',
+            type: 'input',
+            message: 'What is the title of the new role?'
+        },
+        {
+            name:'roleSalary',
+            type:'input',
+            message: 'What is the salary for this role?',
         }
-    ])
 
+    ])
+    .then((response) => {
+        let index = departmentArr.indexOf(response.selectDepartment);
+        let deptId = (index + 1);
+        db.query('insert into rol (title , salary, departmentId) values (?, ?, ?)', response.newRole, response.roleSalary, deptId, (err, res) => {
+            if (err) throw err;
+            rolesArr = rolesArr[index].push(response.newRole);
+            console.log(`new role added : ` + response.newRole);
+            init();
+        } )
+    })
 };
 
 const addEmployee = () => {
 
+    db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
+    join rol on employees.roleId = rol.roleId
+    join department on employees.managerId = department.departmentId;`, 
+    (err, res) => {
+if (err) throw err;
+
+})
+
+
+
+    inquirer.prompt([
+        {
+            name: 'selectDepartment',
+            type: 'list',
+            message: 'Assign new employee a department.',
+            choices: departmentArr
+        },
+        // {
+        //     name: 'selectRole',
+        //     type: 'list',
+        //     message: 'Assign new employee a role.',
+        //     choices: ,
+        // }
+    ])
 };
 
 const employeeRole = () => {
-
+    
+    db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
+    join rol on employees.roleId = rol.roleId
+    join department on employees.managerId = department.departmentId;`, function (err, res) {
+        if (err) throw err;
+         roleList = res.map(employees => {
+            return `${employees.title}`
+         })
+         employeeList = res.map(employees => {
+            return `${employees.firstName} ${employees.lastName}`
+        }) 
+        console.log(roleList)
+        inquirer.prompt([
+      
+            {
+                name: 'employeeSelect',
+                type: 'list',
+                message: 'Which employee is changing roles',
+                choices: employeeList
+            },
+            {
+                name: 'roleSelect',
+                type:'list',
+                message: 'which role will they be changed to?',
+                choices: roleList
+            }
+        ])
+        .then((response) => {
+            console.log(response)
+            // db.query(`update employee set ? where ? and ?`, )
+        })
+    })
+    
+ 
 };
 
 const quit = () => {
-
+    process.end();
 };
 
 
