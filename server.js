@@ -126,6 +126,7 @@ const addDepartment = () => {
             .then((response) => {
                 db.query(`insert into department (departmentName, departmentManager) values ('${response.newDepartment}','${response.newManager}' )`, (err, res) => {
                     if (err) throw err;
+                    departmentArr.push(response.newDepartment);
                     console.log(`new department added : ` + response.newDepartment);
                     init();
                 })
@@ -224,7 +225,6 @@ const employeeRole = () => {
          employeeList = res.map(employees => {
             return `${employees.firstName} ${employees.lastName}`
         }) 
-        console.log(roleList)
         inquirer.prompt([
       
             {
