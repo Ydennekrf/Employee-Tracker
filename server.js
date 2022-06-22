@@ -126,7 +126,6 @@ const addDepartment = () => {
             .then((response) => {
                 db.query(`insert into department (departmentName, departmentManager) values ('${response.newDepartment}','${response.newManager}' )`, (err, res) => {
                     if (err) throw err;
-                    departmentArr = departmentArr.push(response.newDepartment);
                     console.log(`new department added : ` + response.newDepartment);
                     init();
                 })
@@ -135,13 +134,17 @@ const addDepartment = () => {
 
 // adds a role into the database
 const addRole = () => {
-    
+    db.query(`select departmentName from department`, (err, res) => {
+        if(err) throw err;
+        departmentList = res.map(dept => {
+            return `${dept.departmentName}`
+    })
     inquirer.prompt([
         {
             name: 'selectDepartment',
             type: 'list',
             message: 'Which department would you like to add a role to?',
-            choices: departmentArr,
+            choices: departmentList,
         },
         {
             name:'newRole',
@@ -164,7 +167,8 @@ const addRole = () => {
             init();
         } )
     })
-};
+})};
+
 // adds a new employee to the data base
 const addEmployee = () => {
 
