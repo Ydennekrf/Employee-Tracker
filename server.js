@@ -2,12 +2,11 @@
 const cTable= require('console.table');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-
-let departmentArr = ['Data Engineering', 'Web Developers', 'Financial', 'Sales', 'Managment'];
+// global variables
 let employeeList;
+let departmentArr =["Data engineering", "Web Developers", "Financial", "sales", "Management"];
 
-
-
+//conection to the sql database
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -20,7 +19,7 @@ db.connect(err => {
     console.log(' connected to database employee_track');
     init();
 });
-
+//init function brings up the main menu with list of options
 const init = () => {
     inquirer.prompt([
         {
@@ -75,7 +74,7 @@ choices: ['view all departments',
         }
     })
 };
-
+// shows all departments
 const departments = () => {
     db.query('select departmentId, departmentName from department;', (err, res) => {
         if (err) throw err;
@@ -83,7 +82,7 @@ const departments = () => {
         init();
     })
 };
-
+// shows all employees with their name title salary dept name and manager
 const employees = () => {
     db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
                 join rol on employees.roleId = rol.roleId
@@ -94,7 +93,7 @@ const employees = () => {
         init();
     })
 };
-
+// shows all the roles with dept name title and salary
 const roles = () => {
     db.query(`select roleId, departmentName, title, salary from rol
                 join department on rol.departmentId = department.departmentId;`, (err, res) => {
@@ -103,7 +102,7 @@ const roles = () => {
         init();
     })
 };
-
+// adds a department into the database
 const addDepartment = () => {
     inquirer.prompt([
         {
@@ -121,7 +120,7 @@ const addDepartment = () => {
         })
     })
 };
-
+// adds a role into the database
 const addRole = () => {
     
     inquirer.prompt([
@@ -144,45 +143,58 @@ const addRole = () => {
 
     ])
     .then((response) => {
-        console.log(response.newRole)
         let index = departmentArr.indexOf(response.selectDepartment);
         let deptId = index + 1;
         db.query(`insert into rol (title , salary, departmentId) values ('${response.newRole}', '${response.roleSalary}', '${deptId}')`, (err, res) => {
-            console.log('hello')
             if (err) throw err;
             console.log(`new role added : ` + response.newRole);
             init();
         } )
     })
 };
-
+// adds a new employee to the data base
 const addEmployee = () => {
 
-    db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
-    join rol on employees.roleId = rol.roleId
-    join department on employees.managerId = department.departmentId;`, 
+    db.query(`select title, departmentId from rol`, 
     (err, res) => {
 if (err) throw err;
-
+roleList = res.map(rol => {
+    return `${rol.title} ${rol.departmentId}`
+ })
 inquirer.prompt([
     {
-        name: 'selectDepartment',
-        type: 'list',
-        message: 'Assign new employee a department.',
-        choices: departmentArr
+        name: 'newFirst',
+        type: 'input',
+        message: 'input first name.',
+    },
+    {
+        name: 'newLast',
+        type: 'input',
+        message: 'input last name.',
     },
     {
         name: 'selectRole',
         type: 'list',
         message: 'Assign new employee a role.',
-        choices: ,
+        choices: roleList,
     }
 ])
+    .then((response) => {
+        //helper functions to manipulate the data i know there is an easier way to do this but ive run out of time
+        let deptHelp = response.selectRole;
+        let deptHelpArr = deptHelp.split(" ");
+        let newdeptId = deptHelpArr.reverse();
+        let index = roleList.indexOf(response.selectRole);
+        let roleId = index + 1;
+        db.query(`insert into employees (firstName, lastName, roleId, managerId) values('${response.newFirst}', '${response.newLast}' , '${roleId}', '${newdeptId[0]}')`);
+        console.log(`${response.newFirst} ${response.newLast} was added as an employee with a role of ${response.selectRole}`);
+        init();
+    })
 
 })
  
 };
-
+// updates an employees role
 const employeeRole = () => {
     
     db.query(`select id,firstName,lastName,title,salary,departmentName,departmentManager from employees 
@@ -212,7 +224,7 @@ const employeeRole = () => {
             }
         ])
         .then((response) => {
-            
+           // helper functions to manipulate the response data i know there is an easier way to do this but i've run out of time. 
             let name = response.employeeSelect;
             let nameArr = name.split(" ");
             let first = nameArr[0];
@@ -232,8 +244,9 @@ const employeeRole = () => {
     
  
 };
-
+// quits the program
 const quit = () => {
+    console.log('goodbye');
     process.exit();
 };
 
