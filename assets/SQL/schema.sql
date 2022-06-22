@@ -6,7 +6,7 @@ drop table if exists employees;
 create table department (
     departmentId int auto_increment primary key,
     departmentName varchar(30),
-    departmentMan varchar(30)
+    departmentManager varchar(30)
 );
 
 create table rol (

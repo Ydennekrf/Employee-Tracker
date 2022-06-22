@@ -144,11 +144,12 @@ const addRole = () => {
 
     ])
     .then((response) => {
+        console.log(response.newRole)
         let index = departmentArr.indexOf(response.selectDepartment);
-        let deptId = (index + 1);
-        db.query('insert into rol (title , salary, departmentId) values (?, ?, ?)', response.newRole, response.roleSalary, deptId, (err, res) => {
+        let deptId = index + 1;
+        db.query(`insert into rol (title , salary, departmentId) values ('${response.newRole}', '${response.roleSalary}', '${deptId}')`, (err, res) => {
+            console.log('hello')
             if (err) throw err;
-            rolesArr = rolesArr[index].push(response.newRole);
             console.log(`new role added : ` + response.newRole);
             init();
         } )
@@ -163,24 +164,23 @@ const addEmployee = () => {
     (err, res) => {
 if (err) throw err;
 
+inquirer.prompt([
+    {
+        name: 'selectDepartment',
+        type: 'list',
+        message: 'Assign new employee a department.',
+        choices: departmentArr
+    },
+    {
+        name: 'selectRole',
+        type: 'list',
+        message: 'Assign new employee a role.',
+        choices: ,
+    }
+])
+
 })
-
-
-
-    inquirer.prompt([
-        {
-            name: 'selectDepartment',
-            type: 'list',
-            message: 'Assign new employee a department.',
-            choices: departmentArr
-        },
-        // {
-        //     name: 'selectRole',
-        //     type: 'list',
-        //     message: 'Assign new employee a role.',
-        //     choices: ,
-        // }
-    ])
+ 
 };
 
 const employeeRole = () => {
@@ -190,7 +190,7 @@ const employeeRole = () => {
     join department on employees.managerId = department.departmentId;`, function (err, res) {
         if (err) throw err;
          roleList = res.map(employees => {
-            return `${employees.title}`
+            return `${employees.title} ${employees.id}`
          })
          employeeList = res.map(employees => {
             return `${employees.firstName} ${employees.lastName}`
@@ -212,8 +212,21 @@ const employeeRole = () => {
             }
         ])
         .then((response) => {
-            console.log(response)
-            // db.query(`update employee set ? where ? and ?`, )
+            
+            let name = response.employeeSelect;
+            let nameArr = name.split(" ");
+            let first = nameArr[0];
+            let last = nameArr[1];
+            let roleHelp = response.roleSelect;
+            let roleHelpArr = roleHelp.split(" ");
+            let newRoleId = roleHelpArr.reverse();
+            
+            
+            db.query(`update employees set roleId ='${newRoleId[0]}' where firstName = '${first}'  and lastName = '${last}'`, (err, res) => {
+                if (err) throw err;
+                console.log(`${response.employeeSelect}'s role was successfully changed.`);
+                init();
+            } )
         })
     })
     
@@ -221,7 +234,7 @@ const employeeRole = () => {
 };
 
 const quit = () => {
-    process.end();
+    process.exit();
 };
 
 
